@@ -1,11 +1,11 @@
 {
-  "name": "whiteboarding",
-  "version": "0.0.0",
-  "description": "A collaborative realtime whiteboarding application",
-  "main": "app.js",
-  "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
-  },
-  "author": "Lukas Olson",
-  "license": "BSD"
+	"name": "whiteboarding",
+	"version": "0.0.1",
+	"private": true,
+	"scripts": {
+		"start": "node app"
+	},
+	"dependencies": {
+		"socket.io": "latest"
+	}
 }
