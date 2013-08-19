@@ -8,7 +8,7 @@ function WhiteboardCanvas(canvas, socket, id) {
 	_.bindAll(
 		this, "setWhiteboard", "drawPolyline",
 		"onTouchStart", "onTouchMove", "onTouchEnd",
-		"onMouseDown", "onMouseMove", "onMouseUp"
+		"onDrawStart", "onDraw", "onDrawEnd"
 	);
 
 	socket.emit("joinWhiteboard", id, _.bind(function (whiteboard) {
@@ -22,8 +22,8 @@ function WhiteboardCanvas(canvas, socket, id) {
 	socket.on("drawStart", this.drawPolyline);
 	socket.on("draw", this.drawPolyline);
 
-	canvas.onmousedown = this.onMouseDown;
-	canvas.onmouseup = this.onMouseUp;
+	canvas.onmousedown = this.onDrawStart;
+	canvas.onmouseup = this.onDrawEnd;
 	canvas.ontouchstart = this.onTouchStart;
 	canvas.ontouchmove = this.onTouchMove;
 	canvas.ontouchend = this.onTouchEnd;
@@ -112,73 +112,65 @@ WhiteboardCanvas.prototype = {
 	onTouchStart: function (e) {
 		e.preventDefault();
 		for (var i = 0; i < e.changedTouches.length; i++) {
-			var touch = e.changedTouches[i],
-				polyline = {
-					id: touch.identifier,
-					color: this.context.strokeStyle,
-					width: this.context.lineWidth,
-					points: [{
-						x: this.adjustX(touch.pageX),
-						y: this.adjustY(touch.pageY)
-					}]
-				};
-			this.touchLineMap[touch.identifier] = polyline;
-			this.drawCircle(
-				this.adjustX(touch.pageX),
-				this.adjustY(touch.pageY),
-				this.context.lineWidth / 2
-			);
-			this.socket.emit("drawStart", polyline);
+			this.onDrawStart(e.changedTouches[i]);
 		}
 	},
 
 	onTouchMove: function (e) {
 		e.preventDefault();
 		for (var i = 0; i < e.changedTouches.length; i++) {
-			var touch = e.changedTouches[i],
-				point = {
-					x: this.adjustX(touch.pageX),
-					y: this.adjustY(touch.pageY)
-				};
-			var polyline = this.touchLineMap[touch.identifier];
-			polyline.points.push(point);
-			this.drawLine(polyline.points.slice(polyline.points.length - 2));
-			this.socket.emit("draw", {
-				polylineId: polyline.id,
-				point: point
-			});
+			this.onDraw(e.changedTouches[i]);
 		}
 	},
 
 	onTouchEnd: function (e) {
 		e.preventDefault();
 		for (var i = 0; i < e.changedTouches.length; i++) {
-			delete this.touchLineMap[e.changedTouches[i].identifier];
+			this.onDrawEnd(e.changedTouches[i]);
 		}
 	},
 
-	onMouseDown: function (e) {
-		this.linesCount++
-		this.onTouchStart(this.wrapMouseEvent(e));
-		this.canvas.onmousemove = this.onMouseMove;
+	onDrawStart: function (e) {
+		this.linesCount++;
+		var polyline = {
+			id: e.identifier || this.linesCount,
+			color: this.context.strokeStyle,
+			width: this.context.lineWidth,
+			points: [{
+				x: this.adjustX(e.pageX),
+				y: this.adjustY(e.pageY)
+			}]
+		};
+		this.touchLineMap[e.identifier || this.linesCount] = polyline;
+
+		this.drawCircle(
+			this.adjustX(e.pageX),
+			this.adjustY(e.pageY),
+			this.context.lineWidth / 2
+		);
+		this.socket.emit("drawStart", polyline);
+
+		this.canvas.onmousemove = this.onDraw;
 	},
 
-	onMouseMove: function (e) {
-		this.onTouchMove(this.wrapMouseEvent(e));
+	onDraw: function (e) {
+		var point = {
+			x: this.adjustX(e.pageX),
+			y: this.adjustY(e.pageY)
+		};
+		var polyline = this.touchLineMap[e.identifier || this.linesCount];
+		polyline.points.push(point);
+
+		this.drawLine(polyline.points.slice(polyline.points.length - 2));
+		this.socket.emit("draw", {
+			polylineId: polyline.id,
+			point: point
+		});
 	},
 
-	onMouseUp: function (e) {
-		this.onTouchEnd(this.wrapMouseEvent(e));
+	onDrawEnd: function (e) {
+		delete this.touchLineMap[e.identifier || this.linesCount];
 		this.canvas.onmousemove = null;
-	},
-
-	wrapMouseEvent: function(e) {
-		e.changedTouches = [{
-			pageX: e.pageX,
-			pageY: e.pageY,
-			identifier: this.linesCount
-		}];
-		return e;
 	},
 
 	adjustX: function (x) {
