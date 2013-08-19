@@ -11,12 +11,12 @@ io.sockets.on("connection", function (socket) {
 
 	var createWhiteboard = function (data, callback) {
 		var id = HashGenerator.generateHash(4);
-		whiteboardsMap[id] = {id: id, polylinesMap: {}};
+		whiteboardsMap[id] = {id: id, polylinesMap: {}, width: data.width, height: data.height};
 		joinWhiteboard(id, callback);
 	};
 
 	var joinWhiteboard = function(id, callback) {
-		if (!(id in whiteboardsMap)) return createWhiteboard(null, callback);
+		if (!(id in whiteboardsMap)) return callback(null);
 		whiteboard = whiteboardsMap[id];
 		whiteboard.polylinesMap[socket.id] = {};
 		socket.join(id);

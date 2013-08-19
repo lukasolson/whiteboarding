@@ -2,11 +2,20 @@
 <html>
 	<head>
 		<title>Whiteboarding.IO</title>
+		<link rel="stylesheet" href="//cdnjs.cloudflare.com/ajax/libs/pure/0.2.1/pure-min.css" />
 		<link rel="stylesheet" href="app.css" />
+		<!--<link rel="apple-touch-icon" href="assets/dixit.png" />-->
+		<meta name="viewport" content="initial-scale=1.0, maximum-scale=1.0, minimum-scale=1.0, user-scalable=no" />
+		<meta name="apple-mobile-web-app-capable" content="yes" />
+		<meta name="apple-touch-fullscreen" content="yes" />
 	</head>
 	<body>
+		<header>
+			<span>Whiteboarding</span>
+		</header>
 		<canvas id="whiteboard"></canvas>
 		<script src="//10.1.11.35:1113/socket.io/socket.io.js"></script>
+		<script src="//code.jquery.com/jquery-1.10.1.min.js"></script>
 		<script src="//cdnjs.cloudflare.com/ajax/libs/lodash.js/1.3.1/lodash.min.js"></script>
 		<script src="whiteboard-canvas.js"></script>
 		<script src="app.js"></script>
