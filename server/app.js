@@ -9,9 +9,9 @@ var whiteboardsMap = {};
 io.sockets.on("connection", function (socket) {
 	var whiteboard = null;
 
-	var createWhiteboard = function (data, callback) {
+	var createWhiteboard = function (dimensions, callback) {
 		var id = HashGenerator.generateHash(4);
-		whiteboardsMap[id] = {id: id, polylinesMap: {}, width: data.width, height: data.height};
+		whiteboardsMap[id] = {id: id, polylinesMap: {}, width: dimensions.width, height: dimensions.height};
 		joinWhiteboard(id, callback);
 	};
 
